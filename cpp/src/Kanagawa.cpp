@@ -10,9 +10,10 @@ enum DNA
     T = 0b11  // 11
 };
 
-size_t SEED_LENGTH = 4;  // 16 bases
-size_t DATA_LENGTH = 16; // 64 bases
-size_t ECC_LENGTH = 5;   // 20 bases
+size_t SEED_LENGTH = 4;                        // 16 bases
+size_t DATA_LENGTH = 16;                       // 64 bases
+size_t ECC_LENGTH = 5;                         // 20 bases
+size_t MSG_LENGTH = SEED_LENGTH + DATA_LENGTH; // 80 bases
 size_t CHUNK_NUM = 1494;
 
 /**
@@ -65,6 +66,46 @@ vector<uint8_t> DNAtoBinary(const string &dna)
     return binary;
 }
 
+void message_pass(size_t droplet_index, vector<pair<uint32_t, vector<uint8_t>>> &droplets, vector<vector<uint8_t>> &chunks, set<size_t> &done_segments, unordered_map<size_t, set<size_t>> &chunk_to_droplets)
+{
+    auto &droplet = droplets[droplet_index];
+    srand(droplet.first);
+    set<size_t> num_chunks;
+    for (size_t i = 0; i < CHUNK_NUM; i++)
+    {
+        if (rand() % 2)
+        {
+            num_chunks.insert(i);
+        }
+    }
+
+    for (size_t chunk_num : num_chunks)
+    {
+        if (done_segments.count(chunk_num))
+        {
+            for (size_t i = 0; i < DATA_LENGTH; i++)
+            {
+                droplet.second[i] ^= chunks[chunk_num][i];
+            }
+            num_chunks.erase(chunk_num);
+            chunk_to_droplets[chunk_num].erase(droplet_index);
+        }
+    }
+
+    if (num_chunks.size() == 1)
+    {
+        size_t lone_chunk = *num_chunks.begin();
+        chunks[lone_chunk] = droplet.second;
+        done_segments.insert(lone_chunk);
+        chunk_to_droplets[lone_chunk].erase(droplet_index);
+
+        for (auto other_droplet_index : chunk_to_droplets[lone_chunk])
+        {
+            message_pass(other_droplet_index, droplets, chunks, done_segments, chunk_to_droplets);
+        }
+    }
+}
+
 int main()
 {
     ifstream dnaDataStream("50-SF.txt");
@@ -75,18 +116,58 @@ int main()
     }
 
     string line;
-    vector<vector<uint8_t>> binary_vectors;
+    vector<vector<uint8_t>> chunks(CHUNK_NUM, vector<uint8_t>(DATA_LENGTH, 0));
+    set<size_t> done_segments;
+    unordered_map<size_t, set<size_t>> chunk_to_droplets;
+    vector<pair<uint32_t, vector<uint8_t>>> droplets;
 
     while (getline(dnaDataStream, line))
     {
         vector<uint8_t> droplet = DNAtoBinary(line);
-        // handle every droplet
-        RS::ReedSolomon rs(droplet.size(), ECC_LENGTH);
-		rs.Decode(droplet.data(), droplet.data(), NULL, 0);
-        binary_vectors.push_back(droplet);
+        if (droplet.size() != 25)
+        {
+            continue;
+        }
+        RS::ReedSolomon rs(MSG_LENGTH, ECC_LENGTH);
+        vector<uint8_t> output(MSG_LENGTH);
+        bool faulty = rs.Decode(droplet.data(), output.data());
+        if (faulty)
+        {
+            continue;
+        }
+
+        uint32_t seed = output[0] | (output[1] << 8) | (output[2] << 16) | (output[3] << 24);
+        vector<uint8_t> data(output.begin() + SEED_LENGTH, output.end());
+        droplets.push_back({seed, data});
+
+        srand(seed);
+        set<size_t> num_chunks;
+        for (size_t i = 0; i < CHUNK_NUM; i++)
+        {
+            if (rand() % 2)
+            {
+                num_chunks.insert(i);
+            }
+        }
+        for (size_t chunk_num : num_chunks)
+        {
+            chunk_to_droplets[chunk_num].insert(droplets.size() - 1);
+        }
+    }
+
+    for (size_t i = 0; i < droplets.size(); i++)
+    {
+        message_pass(i, droplets, chunks, done_segments, chunk_to_droplets);
     }
 
     dnaDataStream.close();
+
+    ofstream decodedFile("50-SF_decoded.txt", ios::binary);
+    for (const auto &chunk : chunks)
+    {
+        decodedFile.write(reinterpret_cast<const char *>(chunk.data()), chunk.size());
+    }
+    decodedFile.close();
 
     return 0;
 }
