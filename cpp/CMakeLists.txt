@@ -15,14 +15,15 @@ set(SOURCES
     src/GaloisField.cpp
     src/Polynomial.cpp
     src/ReedSolomon.cpp
-    src/Kanagawa.cpp
 )
 
-# OpenCV package
 find_package(OpenCV REQUIRED)
+find_package(OpenSSL REQUIRED)
 
-# Add the executable
-add_executable(TestReedSolomon ${SOURCES})
+# Add the encoder executable
+add_executable(encoder ${SOURCES} src/Encoder.cpp)
+target_link_libraries(encoder ${OpenCV_LIBS} OpenSSL::SSL OpenSSL::Crypto)
 
-# Link OpenCV libraries
-target_link_libraries(TestReedSolomon ${OpenCV_LIBS})
+# Add the decoder executable
+add_executable(decoder ${SOURCES} src/Decoder.cpp)
+target_link_libraries(decoder ${OpenCV_LIBS} OpenSSL::SSL OpenSSL::Crypto)
