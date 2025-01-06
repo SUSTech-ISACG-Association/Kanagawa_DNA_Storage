@@ -6,8 +6,8 @@
 #include <vector>
 using namespace std;
 
-const string SOURCE_FILE = "../50-SF.txt";
-const string DECODED_FILE = "../SeedData.txt";
+string SOURCE_FILE = "../50-SF.txt";
+string DECODED_FILE = "../SeedData.txt";
 
 enum DNA
 {

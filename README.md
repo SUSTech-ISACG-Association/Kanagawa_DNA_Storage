@@ -19,49 +19,47 @@ Kanagawa_DNA_Storage is a toolkit designed to encode digital data into DNA seque
 
 ## Installation
 
-### C++ Components
-
-1. Clone the repository:
+First, clone the repository:
 
 ```sh
-git clone https://github.com/yourusername/Kanagawa_DNA_Storage.git
-cd Kanagawa_DNA_Storage
+git clone git@github.com:SUSTech-ISACG-Association/Kanagawa_DNA_Storage.git
 ```
 
-2. Create a build directory and navigate to it:
+### C++ Components
 
-   ```sh
-   mkdir build
-   cd build
-   ```
-
-3. Run CMake to configure the project:
-
-   ```sh
-   cmake ..
-   ```
-
-4. Build the project:
-
-   ```sh
-   make
-   ```
+```sh
+# Create a build directory
+mkdir build
+cd build
+# Make sure you have OpenCV and OpenSSL installed
+cmake ..
+make
+```
 
 ### Python Components
 
-1. Install the required Python packages:
+Install the required Python packages:
 
-   ```sh
-   pip install numpy tqdm reedsolo
-   ```
+```sh
+pip install -r requirements.txt
+```
 
 ## Usage
 
-### Encoding
+### Decoding
 
-To encode an image into DNA sequences, run the encoder executable:
+The decoding step is divided into two parts: decoding the DNA sequence into an intermediate binary file (SeedData.txt) and decoding the binary file into the original data.
 
-```sh
-./encoder
-```
+1. Compile the decoder
+2. Run the decoder with the DNA sequence as input
 
+	```sh
+	./decoder
+	```
+3. Run the Python script to decode the SeedData.txt file into the original data
+
+	```sh
+	python finalize.py
+	```
+
+Note that by default, the DNA sequence is read from the file `50-SF.txt`, the intermediate binary file is written to `SeedData.txt`, and the decoded data is written to `Kanagawa.jpg`. You can change these settings in the `decoder.cpp` and `finalize.py` files.
