@@ -114,6 +114,11 @@ int main()
         // Divide the data into chunks
         std::vector<std::vector<uint8_t>> chunks = divide_into_chunks(data, DATA_SIZE);
 
+		// TODO: Use Luby Transform to generate droplets
+		// You may find this feature available using the version cloned by
+		// git clone git@github.com:SUSTech-ISACG-Association/Kanagawa_DNA_Storage.git
+		// Sorry for not updating this piece of code in time due to the tight schedule.
+
         // Initialize Reed-Solomon codec
         RS::ReedSolomon rs(DATA_SIZE, RSCODE_SIZE);
 

@@ -15,6 +15,7 @@ set(SOURCES
     src/GaloisField.cpp
     src/Polynomial.cpp
     src/ReedSolomon.cpp
+	src/Random.cpp
 )
 
 find_package(OpenCV REQUIRED)

@@ -3,7 +3,7 @@
 #import "@preview/codly-languages:0.1.1": *
 #show: codly-init.with()
 
-#let abstract = [DNA storage is a cutting-edge approach to data storage, offering remarkable benefits like high storage density, energy efficiency, and longevity. Our project implements a decoding system that converts raw DNA sequence data into usable digital information, specifically by decoding DNA sequences that encode image files. The decoding backend is implemented in C++ and uses Reed-Solomon error correction to ensure data integrity. We also utilize Python2 for the frontend of the decoding process using its PRNG to recover the _The Great Wave off Kanagawa_. Our custom C++ encoder works seamlessly with the C++ full decoding backend. The final image file is successfully recovered, demonstrating the potential of DNA storage systems for high-density data retrieval.]
+#let abstract = [DNA storage is a cutting-edge approach to data storage, offering remarkable benefits like high storage density, energy efficiency, and longevity. Our project implements a decoding system that converts raw DNA sequence data into usable digital information, specifically by decoding DNA sequences that encode image files. The decoding backend is implemented in C++ and uses Reed-Solomon error correction to ensure data integrity. We also utilize a custom PRNG in C++ that mimics the behavior of the Python2.7 PRNG to recover the _The Great Wave off Kanagawa_. Our custom C++ encoder works seamlessly with the C++ full decoding backend. The final image file is successfully recovered, demonstrating the potential of DNA storage systems for high-density data retrieval. Our project is open-source and available on #link("https://github.com/SUSTech-ISACG-Association/Kanagawa_DNA_Storage","GitHub/Kanagawa_DNA_Storage") .]
 
 #show: arkheion.with(
   title: "A DNA-based Data Storage Method using Reed-Solomon Algorithm",
@@ -53,8 +53,8 @@ This project addresses these challenges through error-correction techniques, suc
 LT (Luby Transform) codes are a type of erasure code used for reliable data transmission over unreliable or lossy networks. They are the first practical realization of fountain codes, which are rateless erasure codes. LT codes are designed to generate potentially infinite numbers of encoded symbols from a given set of source symbols, allowing the receiver to recover the original data from any subset of the encoded symbols that is slightly larger than the original set@luby2002lt.
 
 #figure(
-	image("image/LT.png",width: 60%),
-	caption: [The Encoding Process of LT Codes]
+    image("image/LT.png",width: 60%),
+    caption: [The Encoding Process of LT Codes]
 )
 
 === Encoding
@@ -118,14 +118,14 @@ The error locator polynomial $sigma(x)$ is constructed using the Berlekamp-Masse
 The Reed-Solomon code used in this project is capable of correcting up to 10 substitution errors per droplet, ensuring the integrity of the recovered data.
 
 = Methodology
-Our decoding system is built in two primary components: the encoder and the decoder. The encoder, implemented in C++, generates the DNA-encoded file from the original image. The decoder, implemented in a combination of C++ and Python2, recovers the image by decoding the DNA sequence data, correcting errors, and reconstructing the original file.
+Our decoding system is built in two primary components: the encoder and the decoder. The encoder, implemented in C++, generates the DNA-encoded file from the original image. The decoder, implemented in C++, recovers the image by decoding the DNA sequence data, correcting errors, and reconstructing the original file. Note that we have implemented a similar PRNG in C++, having the same behavior as the one used in Python2.7, which breaks the limitation of the PRNG used by @erlich2017dna, and now our encoding and decoding can co-work together seamlessly.
 
 == Data Analysis
 
 The project provides a sequencing result file called "50-SF.txt", which includes 27,726 sequencing sequences that contain all the information about The Great Wave off Kanagawa. The DNA sequences in the file are divided into different lengths, ranging from 21 to 127 bases. Meanwhile, there are insertion, deletion, and substitution errors in the sequencing results.
 
 #figure(
-	image("image/Analyze_base.png",width: 80%),
+    image("image/Analyze_base.png",width: 80%),
 )
 
 The figure below illustrates that although most of the DNA fragments in the file are between 98-101 in length, there are still significant base sequencing errors that cannot be ignored. If the length of DNA sequence is far away from 100, it should be discarded. Besides, for those duplicated DNA sequences after the preprocessing, only one of them should be kept for simplicity.
@@ -179,9 +179,9 @@ By Reed-Solomon, we are able to recover droplets with less than 10 base errors, 
 This algorithm ensures that once a segment is recovered, it can be used to help recover other related segments until all segments are decoded.
 
 == Implementation
-The backend of our decoding system is implemented in C++, with the main logic for droplet recovery and segment inference handled by the Python2 frontend. Due to limitations in Python2's PRNG, which affects the deterministic mapping between seed and chunk IDs, we were unable to fully migrate the decoding process to C++ for the given encoded file `50-SF.txt`. 
+The backend of our decoding system is implemented in C++, with the main logic for droplet recovery and segment inference handled by the C++ frontend. Note that we have implemented a similar PRNG in C++, having the same behavior as the one used in Python2.7, which breaks the limitation of the PRNG used by @erlich2017dna, and now our encoding and decoding can co-work together seamlessly.
 
-However, we implemented a custom C++ encoder that works seamlessly with our C++ decoding backend, demonstrating the potential for a fully integrated system. It is worth noting that our encoder follows a more deterministic approach of mapping seeds to chunk IDs, which is essential for further optimization and integration with the decoding process.
+#pagebreak()
 
 The project structure is as follows:
 
@@ -207,6 +207,7 @@ Kanagawa_DNA_Storage
     └── // Python Packages
 ```
 
+
 In the `src` directory, `Decoder.cpp` contains the main decoding logic, while `Encoder.cpp` implements the encoding process. The `include` directory contains the necessary header files for the project. The `utils` directory contains Python packages used for the frontend of the decoding process.
 
 == Final Decoder Process
@@ -219,8 +220,8 @@ The overall decoding workflow is structured as follows:
 - *Image Reconstruction*: Once all chunks are decoded, the data is reconstructed into the original image.
 
 #figure(
-	image("image/workflow.jpeg",width: 70%),
-	caption: [The Decoding Workflow]
+    image("image/workflow.jpeg",width: 70%),
+    caption: [The Decoding Workflow]
 )
 
 Overall, the decoding process follows the DNA fountain coding pattern, involving a combination of error correction, droplet recovery, and segment inference to reconstruct the original image from the DNA sequences.
@@ -228,8 +229,8 @@ Overall, the decoding process follows the DNA fountain coding pattern, involving
 = Results
 
 #figure(
-	image("image/kanagawa_recovered.png",width: 90%),
-	caption: [The Recovered _The Great Wave off Kanagawa_]
+    image("image/kanagawa_recovered.png",width: 90%),
+    caption: [Recovered _The Great Wave off Kanagawa_ Using C++ Backend and Python Frontend]
 )
 
 By running the decoding process of backend and frontend on the provided DNA sequence file `50-SF.txt`, we successfully recovered the encoded image "_The Great Wave off Kanagawa_" using 1821 lines, among which 1494 distinct droplets involved decoding. This number is relatively smaller than the total number of droplets, demonstrating the efficiency of the decoding system, and indicating that the redundancy in the encoding scheme is sufficient for error correction.
@@ -242,8 +243,14 @@ Our project makes the following contributions:
 
 - Implementation of a encoding/decoding system for DNA-encoded data, specifically for image files.
 - Utilization of LT Code and Reed-Solomon error correction to ensure data integrity by redundancy during decoding.
-- Integration of C++ backend with Python2 frontend for efficient decoding, along with a C++ encoder optimized with deterministic mapping.
+- Integration of C++ backend with C++ frontend for efficient decoding, along with a C++ encoder optimized with deterministic mapping.
 - Successful recovery of "_The Great Wave off Kanagawa_" image from DNA sequences.
+
+This project is open-source at #link("https://github.com/SUSTech-ISACG-Association/Kanagawa_DNA_Storage","GitHub/Kanagawa_DNA_Storage"), and can be extended to handle other types of data encoding and decoding. If you find any issues or have suggestions for improvement, please check the repository for updates and feel free to raise issues to the project.
+
+= Acknowledgments
+
+By the end of this semester, we would like to express our gratitude to Professor Rui Wang for guidance and support throughout EE411 Information Theory and Coding. We have learned a lot about information theories, coding and error-correction strategies, and the course has provided a hands-on experience with these concepts. We are also thankful for the teaching assistants’ detailed feedback on the assignments; it has greatly enriched our understanding of the topics. We look forward to applying these skills to future projects and research.
 
 #bibliography("bibliography.bib")
 
@@ -254,4 +261,4 @@ Our project makes the following contributions:
 In this project, the following contributors made significant contributions:
 
 - Site Fan: Responsible for the backend implementation, including the C++ encoder and decoder logic; documentation.
-- Jiachen Xiao: Responsible for the frontend implementation, including the Python2  decoding process; documentation.
+- Jiachen Xiao: Responsible for the frontend implementation, including the C++ decoding process; documentation.
